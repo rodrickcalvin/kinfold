@@ -1,0 +1,11 @@
+{
+  "name": "Kinfold",
+  "short_name": "Kinfold",
+  "description": "A family tree you can share without handing over your family's data.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f3ee",
+  "theme_color": "#f6f3ee",
+  "icons": []
+}

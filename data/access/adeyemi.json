@@ -1,0 +1,23 @@
+{
+  "treeId": "adeyemi",
+  "publicRole": "none",
+  "members": [
+    {
+      "uid": "NPh-kBsrSTGCuZIlDbDID6CAkDEo7nGz",
+      "role": "owner",
+      "label": "dev persona: elizabeth"
+    },
+    {
+      "uid": "9Eis8e3E0eNeTgWftuVGFMs-Cm785rnx",
+      "role": "viewer",
+      "label": "dev persona: naomi (scoped to her own branch)",
+      "scope": { "rootId": "p10", "depth": 2 }
+    },
+    {
+      "uid": "prGStpepLXRPAc7YFefh0OwFc9CysH4A",
+      "role": "viewer",
+      "label": "dev persona: stranger (unscoped viewer)"
+    }
+  ],
+  "inviteHashes": []
+}

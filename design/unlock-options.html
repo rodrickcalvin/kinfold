@@ -1,0 +1,817 @@
+<title>Twenty Bits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+  :root {
+    --ground: #e9edf1;
+    --surface: #ffffff;
+    --surface-2: #f2f5f8;
+    --ink: #101820;
+    --muted: #5a6672;
+    --line: #ccd5de;
+    --line-soft: #dee5ec;
+    --accent: #0d6e63;
+    --accent-soft: #dcece9;
+    --danger: #a83a17;
+    --danger-soft: #f6e5de;
+    --warn: #7d5f0e;
+    --warn-soft: #f4ecd4;
+
+    --display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+    --body: "Source Serif 4", ui-serif, Georgia, serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --ground: #10151a;
+      --surface: #171e26;
+      --surface-2: #1d252e;
+      --ink: #e8edf2;
+      --muted: #97a3b0;
+      --line: #2a3540;
+      --line-soft: #222c36;
+      --accent: #46bdac;
+      --accent-soft: #12302c;
+      --danger: #e5825c;
+      --danger-soft: #33201a;
+      --warn: #d3b45c;
+      --warn-soft: #2c2617;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #10151a;
+    --surface: #171e26;
+    --surface-2: #1d252e;
+    --ink: #e8edf2;
+    --muted: #97a3b0;
+    --line: #2a3540;
+    --line-soft: #222c36;
+    --accent: #46bdac;
+    --accent-soft: #12302c;
+    --danger: #e5825c;
+    --danger-soft: #33201a;
+    --warn: #d3b45c;
+    --warn-soft: #2c2617;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 20px 96px;
+  }
+
+  /* ---------- Type ---------- */
+
+  h1, h2, h3, .label, .num, table, .chip {
+    font-family: var(--display);
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 8vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+
+  h2 {
+    font-size: clamp(1.35rem, 4.5vw, 1.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+
+  p { margin: 0 0 18px; }
+  p:last-child { margin-bottom: 0; }
+
+  .label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .lede {
+    font-size: 1.16rem;
+    line-height: 1.5;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+
+  strong { font-weight: 600; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  /* ---------- Structure ---------- */
+
+  header.masthead {
+    padding: 72px 0 40px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 0;
+  }
+
+  section {
+    padding: 52px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  .flag {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .flag .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* ---------- Entropy scale ---------- */
+
+  .scale {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 28px 0 8px;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .bar-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-family: var(--display);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .bar-head .t { color: var(--ink); }
+  .bar-head .v {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .track {
+    height: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    position: relative;
+    overflow: hidden;
+  }
+  .fill { position: absolute; inset: 0 auto 0 0; }
+  .fill.weak { background: var(--danger); }
+  .fill.mid  { background: var(--warn); }
+  .fill.ok   { background: var(--accent); }
+
+  /* ---------- Callout ---------- */
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 18px 20px;
+    margin: 28px 0;
+  }
+  .callout p { margin: 0; }
+  .callout.warn { border-left-color: var(--danger); background: var(--danger-soft); }
+
+  /* ---------- Figures ---------- */
+
+  figure {
+    margin: 32px 0;
+  }
+  .figbox {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 20px 16px 8px;
+    overflow-x: auto;
+  }
+  figure svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+  figcaption {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+
+  /* ---------- Option cards ---------- */
+
+  .options { display: flex; flex-direction: column; gap: 22px; margin-top: 30px; }
+
+  .opt {
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+
+  .opt-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line-soft);
+    background: var(--surface-2);
+  }
+  .opt-key {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .opt-head h3 { margin: 0; flex: 1; }
+
+  .chip {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+  .chip.no   { background: var(--danger-soft); color: var(--danger); }
+  .chip.yes  { background: var(--accent-soft); color: var(--accent); }
+  .chip.mid  { background: var(--warn-soft);  color: var(--warn); }
+
+  .opt-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 22px 18px;
+  }
+  @media (min-width: 640px) {
+    .opt-body { grid-template-columns: 168px 1fr; align-items: start; }
+  }
+
+  .opt-body p { font-size: 0.96rem; margin-bottom: 14px; }
+
+  dl.facts { margin: 0; display: flex; flex-direction: column; gap: 9px; }
+  dl.facts > div {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 12px;
+    font-size: 0.86rem;
+    line-height: 1.4;
+  }
+  dl.facts dt {
+    font-family: var(--display);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 3px;
+  }
+  dl.facts dd { margin: 0; }
+
+  /* ---------- Phone mockups ---------- */
+
+  .phone {
+    width: 100%;
+    max-width: 168px;
+    margin: 0 auto;
+    aspect-ratio: 9 / 17.5;
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+    background: var(--ground);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: var(--display);
+  }
+  .phone .ph-title {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+  }
+  .phone .ph-sub {
+    font-size: 0.52rem;
+    color: var(--muted);
+    line-height: 1.3;
+    font-weight: 500;
+  }
+  .pins { display: flex; gap: 6px; justify-content: center; margin: 4px 0; }
+  .pins i {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid var(--muted); display: block;
+  }
+  .pins i.on { background: var(--ink); border-color: var(--ink); }
+
+  .keypad {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+    margin-top: auto;
+  }
+  .keypad span {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    text-align: center;
+    padding: 5px 0;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    color: var(--ink);
+  }
+
+  .biometric {
+    margin: auto auto;
+    width: 52px; height: 52px;
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    display: grid; place-items: center;
+  }
+  .biometric svg { width: 28px; height: 28px; color: var(--accent); }
+
+  .phrase-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
+    margin: auto 0;
+  }
+  .phrase-grid span {
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    padding: 3px 4px;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    color: var(--muted);
+  }
+
+  .counter {
+    margin: auto auto;
+    text-align: center;
+  }
+  .counter b {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 500;
+    display: block;
+    color: var(--danger);
+    font-variant-numeric: tabular-nums;
+  }
+  .counter em {
+    font-size: 0.52rem;
+    font-style: normal;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* ---------- Verdict ---------- */
+
+  ol.stack {
+    counter-reset: s;
+    list-style: none;
+    padding: 0;
+    margin: 26px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  ol.stack li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    align-items: start;
+  }
+  ol.stack li::before {
+    content: counter(s);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    padding-top: 2px;
+  }
+  ol.stack h3 { margin-bottom: 3px; }
+  ol.stack p { font-size: 0.92rem; margin: 0; color: var(--muted); }
+
+  .foot {
+    margin-top: 44px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .foot a { color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="label">Kinfold · key management</p>
+    <h1>Twenty bits</h1>
+    <p class="lede">
+      Can a member unlock their family tree with six digits, the way a banking
+      app does? Not on its own — but the reason why points at the design that
+      actually works.
+    </p>
+  </header>
+
+  <section>
+    <div class="flag"><span class="label">The problem</span><span class="rule"></span></div>
+    <h2>Six digits is a millionth of the search space you need</h2>
+
+    <p>
+      A six-digit PIN has exactly 1,000,000 possible values — about
+      <strong>20 bits</strong> of entropy. The keys protecting the tree are 256-bit.
+      If the PIN <em>is</em> the key, an attacker holding the encrypted file
+      simply tries all million and stops when one decrypts cleanly.
+    </p>
+
+    <p>
+      Slow key-stretching helps, and Kinfold already uses PBKDF2 at 600,000
+      iterations. Measured on one CPU core, that is 92&nbsp;ms per guess — a
+      million guesses would take a day. But an attacker does not use one CPU core.
+    </p>
+
+    <div class="scale">
+      <div class="bar-row">
+        <div class="bar-head"><span class="t">6-digit PIN</span><span class="v">20 bits · ~2 min on one GPU</span></div>
+        <div class="track"><span class="fill weak" style="width:5%"></span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-head"><span class="t">Six-word passphrase</span><span class="v">62 bits · centuries</span></div>
+        <div class="track"><span class="fill mid" style="width:24%"></span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-head"><span class="t">Kinfold recovery phrase</span><span class="v">128 bits · not happening</span></div>
+        <div class="track"><span class="fill ok" style="width:50%"></span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-head"><span class="t">A slice key</span><span class="v">256 bits</span></div>
+        <div class="track"><span class="fill ok" style="width:100%"></span></div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <p>
+        A single consumer graphics card runs this key-derivation roughly four
+        orders of magnitude faster than the measurement above. The whole
+        six-digit space falls in about <strong>two minutes</strong>. Not a
+        theoretical margin — an afternoon's work with off-the-shelf hardware.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="flag"><span class="label">The insight</span><span class="rule"></span></div>
+    <h2>Your bank's PIN isn't protecting your money — the attempt counter is</h2>
+
+    <p>
+      A cash machine takes four digits because it takes your card away after
+      three wrong tries. Your phone takes six because a chip refuses to answer
+      faster than once a second and wipes itself after ten. In neither case is
+      the number doing the work. <strong>The thing that counts wrong answers is
+      doing the work.</strong>
+    </p>
+
+    <p>
+      So the real question is not "how many digits?" It is: <em>can the attacker
+      guess in private, or must they ask someone who is keeping score?</em>
+    </p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 720 300" role="img" aria-label="Two attack paths compared: with an offline blob the attacker makes unlimited guesses locally in about two minutes; with a counted secret the attacker must ask a service that stops answering after five wrong guesses.">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+            <marker id="ard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#a83a17"/>
+            </marker>
+          </defs>
+
+          <!-- divider -->
+          <line x1="360" y1="16" x2="360" y2="284" stroke="currentColor" stroke-width="1" stroke-dasharray="3 5" opacity="0.3"/>
+
+          <!-- LEFT: offline -->
+          <text x="24" y="28" font-family="Archivo, sans-serif" font-size="12" font-weight="700" fill="#a83a17" letter-spacing="1.2">PIN IS THE KEY</text>
+          <text x="24" y="45" font-family="Archivo, sans-serif" font-size="11" fill="currentColor" opacity="0.65">Guessing happens offline</text>
+
+          <rect x="24" y="66" width="130" height="46" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text x="89" y="85" text-anchor="middle" font-family="Archivo, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">Stolen file</text>
+          <text x="89" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity="0.6">tree.enc</text>
+
+          <line x1="154" y1="89" x2="212" y2="89" stroke="#a83a17" stroke-width="1.5" marker-end="url(#ard)"/>
+
+          <rect x="214" y="66" width="118" height="46" fill="none" stroke="#a83a17" stroke-width="1.5"/>
+          <text x="273" y="85" text-anchor="middle" font-family="Archivo, sans-serif" font-size="11.5" font-weight="600" fill="#a83a17">Their GPU</text>
+          <text x="273" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#a83a17" opacity="0.8">000000…999999</text>
+
+          <path d="M 273 112 L 273 140" stroke="#a83a17" stroke-width="1.5" marker-end="url(#ard)"/>
+          <text x="283" y="130" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#a83a17">10⁶ tries</text>
+
+          <rect x="214" y="142" width="118" height="40" fill="#a83a17" stroke="none"/>
+          <text x="273" y="167" text-anchor="middle" font-family="Archivo, sans-serif" font-size="12" font-weight="700" fill="#ffffff">Tree opened</text>
+
+          <text x="24" y="215" font-family="Archivo, sans-serif" font-size="26" font-weight="700" fill="#a83a17">~2 min</text>
+          <text x="24" y="236" font-family="Archivo, sans-serif" font-size="11" fill="currentColor" opacity="0.7">Nobody is counting.</text>
+          <text x="24" y="252" font-family="Archivo, sans-serif" font-size="11" fill="currentColor" opacity="0.7">Nobody is even watching.</text>
+
+          <!-- RIGHT: counted -->
+          <text x="396" y="28" font-family="Archivo, sans-serif" font-size="12" font-weight="700" fill="#0d6e63" letter-spacing="1.2">PIN UNLOCKS A REQUEST</text>
+          <text x="396" y="45" font-family="Archivo, sans-serif" font-size="11" fill="currentColor" opacity="0.65">Guessing must go through a counter</text>
+
+          <rect x="396" y="66" width="118" height="46" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text x="455" y="85" text-anchor="middle" font-family="Archivo, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">Stolen file</text>
+          <text x="455" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity="0.6">tree.enc</text>
+
+          <text x="455" y="130" text-anchor="middle" font-family="Archivo, sans-serif" font-size="10.5" fill="currentColor" opacity="0.75">missing 256 random bits</text>
+
+          <line x1="514" y1="89" x2="566" y2="89" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+          <text x="540" y="80" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="currentColor" opacity="0.7">asks</text>
+
+          <rect x="568" y="60" width="128" height="58" fill="none" stroke="#0d6e63" stroke-width="2"/>
+          <text x="632" y="80" text-anchor="middle" font-family="Archivo, sans-serif" font-size="11.5" font-weight="600" fill="#0d6e63">Counter</text>
+          <text x="632" y="95" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#0d6e63">holds c2</text>
+          <text x="632" y="109" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#0d6e63">max 5</text>
+
+          <path d="M 632 118 L 632 150" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+          <text x="642" y="139" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity="0.75">6th try</text>
+
+          <rect x="568" y="152" width="128" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <text x="632" y="177" text-anchor="middle" font-family="Archivo, sans-serif" font-size="12" font-weight="600" fill="currentColor">c2 destroyed</text>
+
+          <text x="396" y="215" font-family="Archivo, sans-serif" font-size="26" font-weight="700" fill="#0d6e63">5 tries</text>
+          <text x="396" y="236" font-family="Archivo, sans-serif" font-size="11" fill="currentColor" opacity="0.7">A 1-in-200,000 shot,</text>
+          <text x="396" y="252" font-family="Archivo, sans-serif" font-size="11" fill="currentColor" opacity="0.7">then the key is gone forever.</text>
+        </svg>
+      </div>
+      <figcaption>
+        The same six digits, and the same stolen database. What changes is
+        whether the attacker can guess alone. On the right the master key is
+        built from the PIN <em>and</em> 256 random bits held elsewhere, so
+        possessing the file is not enough to start guessing at all — this is how
+        Signal's Secure Value Recovery and iCloud Keychain escrow work.
+      </figcaption>
+    </figure>
+
+    <div class="callout">
+      <p>
+        Six digits are safe exactly when something outside the attacker's
+        control is counting wrong answers — and dangerous the moment the secret
+        can be attacked on their own hardware.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="flag"><span class="label">Four designs</span><span class="rule"></span></div>
+    <h2>What we could actually ship</h2>
+
+    <div class="options">
+
+      <!-- A -->
+      <article class="opt">
+        <div class="opt-head">
+          <span class="opt-key">A</span>
+          <h3>Recovery phrase</h3>
+          <span class="chip yes">Built</span>
+        </div>
+        <div class="opt-body">
+          <div class="phone" aria-hidden="true">
+            <div class="ph-title">Enter your recovery phrase</div>
+            <div class="phrase-grid">
+              <span>k4ng</span><span>7wpq</span>
+              <span>zt2m</span><span>b9xr</span>
+              <span>d1fs</span><span>0hvc</span>
+              <span>ee8j</span><span>mq3n</span>
+            </div>
+            <div class="ph-sub">Written down at signup. There is no reset.</div>
+          </div>
+          <div>
+            <p>
+              128 bits of real entropy, held only by the member. Nothing to
+              attack, nothing on any server, nothing you could hand over if
+              compelled.
+            </p>
+            <dl class="facts">
+              <div><dt>Strength</dt><dd>Uncrackable. This is the ceiling.</dd></div>
+              <div><dt>Cost</dt><dd>Nothing.</dd></div>
+              <div><dt>Catch</dt><dd>Nobody will type sixteen characters to look at a family tree, and a meaningful share of people will lose the paper.</dd></div>
+              <div><dt>Verdict</dt><dd>Keep it as the backstop under everything else. Never the front door.</dd></div>
+            </dl>
+          </div>
+        </div>
+      </article>
+
+      <!-- B -->
+      <article class="opt">
+        <div class="opt-head">
+          <span class="opt-key">B</span>
+          <h3>Six digits, on this device only</h3>
+          <span class="chip yes">Recommended</span>
+        </div>
+        <div class="opt-body">
+          <div class="phone" aria-hidden="true">
+            <div class="ph-title">Enter your PIN</div>
+            <div class="ph-sub">To unlock the Adeyemi tree on this phone</div>
+            <div class="pins"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+            <div class="keypad">
+              <span>1</span><span>2</span><span>3</span>
+              <span>4</span><span>5</span><span>6</span>
+              <span>7</span><span>8</span><span>9</span>
+            </div>
+          </div>
+          <div>
+            <p>
+              The private key is generated in the browser and stored in IndexedDB
+              as a <strong>non-extractable</strong> key. The browser will use it
+              but will not hand out its bytes — not to our code, not to anyone
+              with a copy of the database file. The PIN is a lock on the app, not
+              on the cryptography.
+            </p>
+            <p>
+              This is the honest version of what you asked for, and it is
+              genuinely good: an attacker who steals the server gets nothing at
+              all, because the key was never there.
+            </p>
+            <dl class="facts">
+              <div><dt>Strength</dt><dd>Strong against the server being breached. Moderate against someone holding your unlocked phone.</dd></div>
+              <div><dt>Cost</dt><dd>Nothing. Pure browser APIs.</dd></div>
+              <div><dt>Catch</dt><dd>The key lives on that one device. A new phone needs a fresh grant from the owner, or the phrase from A.</dd></div>
+              <div><dt>Verdict</dt><dd>Ship this. It is the everyday experience.</dd></div>
+            </dl>
+          </div>
+        </div>
+      </article>
+
+      <!-- C -->
+      <article class="opt">
+        <div class="opt-head">
+          <span class="opt-key">C</span>
+          <h3>Passkey — face or fingerprint</h3>
+          <span class="chip yes">Recommended</span>
+        </div>
+        <div class="opt-body">
+          <div class="phone" aria-hidden="true">
+            <div class="ph-title">Unlock with Face ID</div>
+            <div class="biometric">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8"/>
+                <path d="M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8"/>
+                <path d="M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16"/>
+                <path d="M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/>
+                <path d="M9 10v1M15 10v1M9.5 15s1 1 2.5 1 2.5-1 2.5-1"/>
+              </svg>
+            </div>
+            <div class="ph-sub">No PIN, no phrase. The key is derived from the passkey itself.</div>
+          </div>
+          <div>
+            <p>
+              WebAuthn's <span class="mono">PRF</span> extension lets a passkey
+              produce a stable 32-byte secret. That secret unwraps the slice
+              keys. The member touches a sensor and the tree opens — and the key
+              material is held by the phone's secure hardware, which enforces its
+              own attempt limits.
+            </p>
+            <p>
+              Better UX <em>and</em> better security than six digits, which is a
+              rare combination and the reason to prefer it.
+            </p>
+            <dl class="facts">
+              <div><dt>Strength</dt><dd>Highest of the four. Hardware-backed, phishing-resistant.</dd></div>
+              <div><dt>Cost</dt><dd>Nothing.</dd></div>
+              <div><dt>Catch</dt><dd>Support is good but not universal — solid on Android, macOS 15+, iOS 18.4+, Windows 11; absent on Firefox for Android. Treat it as an upgrade, never the only path.</dd></div>
+              <div><dt>Verdict</dt><dd>Offer it first, fall back to B.</dd></div>
+            </dl>
+          </div>
+        </div>
+      </article>
+
+      <!-- D -->
+      <article class="opt">
+        <div class="opt-head">
+          <span class="opt-key">D</span>
+          <h3>Six digits that work on any device</h3>
+          <span class="chip mid">Later, if ever</span>
+        </div>
+        <div class="opt-body">
+          <div class="phone" aria-hidden="true">
+            <div class="ph-title">Enter your PIN</div>
+            <div class="pins"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+            <div class="counter">
+              <b>2</b>
+              <em>attempts remaining before this key is destroyed</em>
+            </div>
+          </div>
+          <div>
+            <p>
+              The Signal model. The PIN is stretched, and the result unlocks a
+              request to a service holding 256 random bits. Get it wrong five
+              times and that service deletes its share — the tree becomes
+              permanently unreadable to everyone, including you.
+            </p>
+            <p>
+              The trap: the counter has to be something the operator
+              <em>cannot</em> bypass. Signal uses secure enclaves. Without one,
+              you hold both the counter and the encrypted file, which means you
+              could brute-force it — and you are right back to being the
+              custodian you were trying to stop being.
+            </p>
+            <dl class="facts">
+              <div><dt>Strength</dt><dd>Excellent with an enclave or split across two independent providers. Illusory on a single server you control.</dd></div>
+              <div><dt>Cost</dt><dd>Real money, or real complexity. Threshold schemes need at least two operators who do not collude.</dd></div>
+              <div><dt>Catch</dt><dd>It reintroduces exactly the custody problem the encryption removed, unless done properly.</dd></div>
+              <div><dt>Verdict</dt><dd>Do not build this now. Revisit only if cross-device recovery becomes the thing blocking adoption.</dd></div>
+            </dl>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="flag"><span class="label">Recommendation</span><span class="rule"></span></div>
+    <h2>Layer three of them and never build the fourth</h2>
+
+    <p>
+      Each layer catches what the one above it drops. The member meets the
+      simplest thing their device supports, and only ever sees the recovery
+      phrase on the day they set up or the day something has gone wrong.
+    </p>
+
+    <ol class="stack">
+      <li>
+        <div>
+          <h3>Passkey, where it works</h3>
+          <p>Face or fingerprint. Nothing to remember, nothing to type, hardware enforcing its own limits.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Six-digit PIN over a non-extractable device key</h3>
+          <p>The fallback on every other browser, and the answer to your original question. The digits gate the app; the browser refuses to surrender the key itself.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Recovery phrase, shown once</h3>
+          <p>New phone, lost passkey, forgotten PIN. Also what an owner uses to re-grant a member who has lost everything.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="callout">
+      <p>
+        This costs nothing, needs no server you have to be trusted with, and
+        gives most members a one-touch unlock. The six digits you asked for are
+        in there — sitting on top of a key that is never transmitted, rather than
+        pretending to be one.
+      </p>
+    </div>
+  </section>
+
+  <p class="foot">
+    Timings measured with PBKDF2-HMAC-SHA256 at 600,000 iterations on a single
+    cloud CPU core (92&nbsp;ms per derivation); the GPU figure is an estimate
+    scaled from published hashcat throughput for the same function and should be
+    treated as an order of magnitude, not a benchmark. Prior art:
+    <a href="https://signal.org/blog/secure-value-recovery/">Signal Secure Value Recovery</a>,
+    <a href="https://juicebox.xyz/blog/key-to-simplicity-squeezing-the-hassle-out-of-encryption-key-recovery">Juicebox threshold OPRF</a>,
+    <a href="https://developers.yubico.com/WebAuthn/Concepts/PRF_Extension/index.html">WebAuthn PRF extension</a>.
+  </p>
+
+</div>

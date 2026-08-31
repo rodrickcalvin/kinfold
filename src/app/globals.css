@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/*
+ * Warm, archival neutrals with a single pine accent. A family tree should feel
+ * like a document, not a dashboard. Colours are declared once as CSS variables
+ * and re-pointed under a dark media query, so every utility below adapts
+ * without a single `dark:` prefix.
+ */
+:root {
+  --bg: #f6f3ee;
+  --surface: #fffdfa;
+  --surface-2: #efeae1;
+  --line: #e0d9cd;
+  --ink: #211d1a;
+  --muted: #6f665c;
+  --accent: #33594a;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4ede8;
+  --private: #9a8f7f;
+  --shadow: 0 1px 2px rgb(33 29 26 / 0.06), 0 4px 12px rgb(33 29 26 / 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15120f;
+    --surface: #1f1b17;
+    --surface-2: #2a251f;
+    --line: #352f27;
+    --ink: #f0ebe4;
+    --muted: #a1978a;
+    --accent: #7fb8a3;
+    --accent-ink: #12211c;
+    --accent-soft: #22302a;
+    --private: #6d6459;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 14px rgb(0 0 0 / 0.35);
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-private: var(--private);
+  --font-sans: var(--font-sans-stack);
+  --font-serif: var(--font-serif-stack);
+}
+
+html {
+  --font-sans-stack: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-serif-stack: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans-stack);
+  /* The canvas handles its own gestures; stop iOS bouncing the page behind it. */
+  overscroll-behavior: none;
+}
+
+/* Respect people who have asked their OS to stop moving things. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.card-shadow {
+  box-shadow: var(--shadow);
+}
+
+/* Redacted people get a hatched fill: visibly a placeholder, not a mistake. */
+.hatched {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    color-mix(in srgb, var(--private) 18%, transparent) 5px,
+    color-mix(in srgb, var(--private) 18%, transparent) 6px
+  );
+}

@@ -1,0 +1,29 @@
+{
+  "id": "adeyemi",
+  "name": "The Adeyemi Family",
+  "description": "Four generations, Lagos to London. A fixture for developing against — every person here is invented.",
+  "people": [
+    { "id": "p1", "given": "Samuel", "surname": "Adeyemi", "sex": "M", "birth": { "date": "1912-03-04", "place": "Lagos, Nigeria" }, "death": { "date": "1988-11-02", "place": "Lagos, Nigeria" }, "living": false, "note": "Railway clerk, then a schoolmaster. Kept a diary for forty years." },
+    { "id": "p2", "given": "Grace", "surname": "Adeyemi", "birthSurname": "Mensah", "sex": "F", "birth": { "date": "1918-07-19", "place": "Accra, Ghana" }, "death": { "date": "2001-05-30", "place": "Lagos, Nigeria" }, "living": false, "note": "Ran the family compound and, for a while, a small textile business." },
+    { "id": "p3", "given": "Joseph", "surname": "Adeyemi", "sex": "M", "birth": { "date": "1940-01-22", "place": "Lagos, Nigeria" }, "death": { "date": "2019-08-14", "place": "London, England" }, "living": false, "note": "Emigrated in 1964 to study engineering." },
+    { "id": "p4", "given": "Miriam", "surname": "Boateng", "birthSurname": "Adeyemi", "sex": "F", "birth": { "date": "1943-06-11", "place": "Lagos, Nigeria" }, "living": true },
+    { "id": "p5", "given": "Daniel", "surname": "Adeyemi", "sex": "M", "birth": { "date": "1947-09-03", "place": "Lagos, Nigeria" }, "death": { "date": "2008-02-19", "place": "Ibadan, Nigeria" }, "living": false },
+    { "id": "p6", "given": "Ruth", "surname": "Adeyemi", "birthSurname": "Osei", "sex": "F", "birth": { "date": "1944-04-27", "place": "Kumasi, Ghana" }, "living": true },
+    { "id": "p7", "given": "Anthony", "surname": "Boateng", "sex": "M", "birth": { "date": "1939-12-01", "place": "Accra, Ghana" }, "death": { "date": "2011-03-22", "place": "Accra, Ghana" }, "living": false },
+    { "id": "p8", "given": "Elizabeth", "surname": "Chen", "birthSurname": "Adeyemi", "sex": "F", "birth": { "date": "1968-05-16", "place": "London, England" }, "living": true },
+    { "id": "p9", "given": "Peter", "surname": "Adeyemi", "sex": "M", "birth": { "date": "1971-10-08", "place": "London, England" }, "living": true },
+    { "id": "p10", "given": "Naomi", "surname": "Boateng", "sex": "F", "birth": { "date": "1972-02-14", "place": "Accra, Ghana" }, "living": true },
+    { "id": "p11", "given": "Michael", "surname": "Chen", "sex": "M", "birth": { "date": "1966-11-30", "place": "Manchester, England" }, "living": true },
+    { "id": "p12", "given": "Amara", "surname": "Adeyemi", "birthSurname": "Nwosu", "sex": "F", "birth": { "date": "1975-07-04", "place": "Enugu, Nigeria" }, "living": true },
+    { "id": "p13", "given": "Sophie", "surname": "Chen", "sex": "F", "birth": { "date": "1998-03-21", "place": "London, England" }, "living": true },
+    { "id": "p14", "given": "Lucas", "surname": "Chen", "sex": "M", "birth": { "date": "2001-09-09", "place": "London, England" }, "living": true },
+    { "id": "p15", "given": "Zara", "surname": "Adeyemi", "sex": "F", "birth": { "date": "2005-12-25", "place": "London, England" }, "living": true }
+  ],
+  "unions": [
+    { "id": "u1", "partners": ["p1", "p2"], "children": ["p3", "p4", "p5"], "kind": "marriage", "start": { "date": "1938-04-16", "place": "Lagos, Nigeria" } },
+    { "id": "u2", "partners": ["p3", "p6"], "children": ["p8", "p9"], "kind": "marriage", "start": { "date": "1966-08-20", "place": "London, England" } },
+    { "id": "u3", "partners": ["p4", "p7"], "children": ["p10"], "kind": "marriage", "start": { "date": "1970-05-02", "place": "Accra, Ghana" } },
+    { "id": "u4", "partners": ["p8", "p11"], "children": ["p13", "p14"], "kind": "marriage", "start": { "date": "1996-06-29", "place": "London, England" } },
+    { "id": "u5", "partners": ["p9", "p12"], "children": ["p15"], "kind": "marriage", "start": { "date": "2002-09-14", "place": "London, England" } }
+  ]
+}
