@@ -22,7 +22,23 @@
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# caches
+.eslintcache
+.turbo/
+
+# key material
 *.pem
+*.key
+*.p12
+*.pfx
 
 # debug
 npm-debug.log*
@@ -32,6 +48,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# Runtime tree data. store.ts writes real family records here; only the
+# invented Adeyemi fixture is committed.
+/data/**
+!/data/trees/
+!/data/access/
+!/data/trees/adeyemi.json
+!/data/access/adeyemi.json
 
 # vercel
 .vercel
@@ -42,3 +67,4 @@ next-env.d.ts
 
 # AI
 *CLAUDE.*
+.claude/
