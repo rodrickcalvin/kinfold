@@ -1,11 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { KeyProvider } from "@/components/KeyProvider";
 
 export const metadata: Metadata = {
   title: "Kinfold",
   description:
     "A family tree you can share without handing over your family's data.",
   manifest: "/manifest.webmanifest",
+  // Nothing in this app should show up in a search result.
+  robots: { index: false, follow: false },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -26,7 +33,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        <KeyProvider>{children}</KeyProvider>
+      </body>
     </html>
   );
 }

@@ -12,7 +12,7 @@ hashed on arrival: there is no users table anywhere in this project.
 npm install
 npm run demo     # see exactly what the server stores, and what three members see
 npm run dev      # http://localhost:3000 — sign in as a dev persona, no config needed
-npm test         # 39 tests, most of them asserting that data does NOT leak
+npm test         # 63 tests, most of them asserting that data does NOT leak
 ```
 
 ## Why bother
@@ -53,27 +53,40 @@ we could get wrong.**
 ## Layout
 
 ```
-src/lib/crypto.ts      WebCrypto primitives. No dependencies.
-src/lib/sealed.ts      Slices, sealing, granting, revoking, opening.
-src/lib/schema.ts      Person / Union / Tree. Relationships live in unions.
-src/lib/layout.ts      Generation assignment and the pedigree drawing.
-src/auth.ts            OIDC in, pseudonymous hash out. No adapter, ever.
-src/components/        The tree canvas: pan, pinch, tap.
-tests/                 Where the privacy claims are enforced.
+src/lib/crypto.ts        WebCrypto primitives. No dependencies.
+src/lib/sealed.ts        Slices: sealing, granting, revoking, re-keying, opening, editing.
+src/lib/schema.ts        Person / Union / Tree, plus the encrypted wire format.
+src/lib/layout.ts        Generation assignment and the pedigree drawing.
+src/lib/store.ts         Disk storage. Plaintext trees and encrypted blobs, one interface.
+src/lib/identity-store.ts A member's private key in IndexedDB, wrapped twice.
+src/auth.ts              OIDC in, pseudonymous hash out. No adapter, ever.
+src/app/api/vault/       Store and hand back ciphertext; never able to read it.
+src/components/KeyProvider.tsx   The one place an unlocked key lives (in memory).
+src/components/vault/    Setup, unlock, create, view, edit, invite, approve.
+tests/                   Where the privacy claims are enforced.
 ```
 
 `src/lib/visibility.ts` and `src/lib/access.ts` are the older server-side
 redaction path. They still work and are still tested, but they require the
 server to read plaintext — they are kept for self-hosted deployments where the
-family *is* the operator, and should not be used for a hosted instance.
+family *is* the operator, and should not be used for a hosted instance. The
+home page lists these under "Self-hosted trees"; the encrypted flow is
+everything under **Encrypted trees**.
 
 ## Status
 
-Early. Working: the data model, the encryption, the layout engine, the tree
-view, dev sign-in. Not yet built: editing a tree in the browser, the invite
-flow, and the unlock layers (passkey → PIN → recovery phrase). The tree route
-still renders server-side and needs moving into the browser now that the server
-has no keys.
+Working end to end in the browser: create a key (with a recovery phrase),
+unlock it by passphrase or recovery phrase, create an encrypted tree, edit
+people and families, and view any tree you hold keys for. Invites work —
+the owner registers a code, a relative submits their public key, the owner
+approves it from their own browser. Removing a member can re-key the affected
+slices in one step so the copy they kept stops opening new records.
+
+Rough edges: the unlock ladder is passphrase / recovery phrase only — no
+passkey or PIN tier yet (`design/unlock-options.html` is the sketch).
+Marriage/partnership *dates* are not carried by the encrypted format. The
+editor is functional rather than polished, and there is no photo upload.
+The old server-rendered `/trees/[treeId]` route remains for self-hosting.
 
 ## Deploying
 

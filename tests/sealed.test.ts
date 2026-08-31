@@ -8,9 +8,12 @@ import {
   type SealedTree,
   type SliceId,
   type SliceKeys,
+  decryptToTree,
   grantAccess,
   keysFor,
   openTree,
+  reseal,
+  resealSlices,
   revokeAccess,
   sealTree,
 } from "@/lib/sealed";
@@ -187,6 +190,68 @@ describe("revocation", () => {
   });
 });
 
+describe("resealSlices — revocation that actually bites", () => {
+  it("re-keys a slice so a copied old key stops opening records", async () => {
+    const { sealedTree: t0, keys: k0 } = await sealTree(plain);
+    const staying = await generateIdentity();
+    const leaving = await generateIdentity();
+    let doc = await grantAccess(t0, staying.publicKey, ALL_SLICES, k0);
+    doc = await grantAccess(doc, leaving.publicKey, ALL_SLICES, k0);
+
+    // The leaver keeps a copy of every slice key they were ever handed.
+    const stolen = await keysFor(doc, leaving.privateKey);
+    expect(await openTree(doc, stolen)).not.toBeNull();
+
+    // grantAccess appends, so the leaver is the last keyring entry.
+    const leaverId = doc.keyring[doc.keyring.length - 1].memberId;
+    doc = revokeAccess(doc, leaverId);
+    const { sealedTree: rekeyed, keys: k1 } = await resealSlices(
+      doc,
+      ALL_SLICES,
+      k0,
+    );
+
+    // The stolen keys are now inert against the rewritten document...
+    expect(await openTree(rekeyed, stolen)).toBeNull();
+    // ...and the returned keys, plus everyone still in the keyring, still work.
+    expect((await openTree(rekeyed, k1))!.people).toHaveLength(plain.people.length);
+    const staysView = await openTree(
+      rekeyed,
+      await keysFor(rekeyed, staying.privateKey),
+    );
+    expect(staysView!.people).toHaveLength(plain.people.length);
+  });
+
+  it("leaves untouched slices and their grants working", async () => {
+    const { sealedTree: t0, keys: k0 } = await sealTree(plain);
+    const cuz = await generateIdentity();
+    const doc = await grantAccess(
+      t0,
+      cuz.publicKey,
+      ["structure", "history", "living-name"],
+      k0,
+    );
+
+    const { sealedTree: rekeyed } = await resealSlices(doc, ["living-name"], k0);
+
+    // Every grant the cousin held is still redeemable after a partial rotation.
+    const held = await keysFor(rekeyed, cuz.privateKey);
+    expect([...held.keys()].sort()).toEqual(
+      ["history", "living-name", "structure"],
+    );
+    const view = (await openTree(rekeyed, held))!;
+    expect(view.people).toHaveLength(plain.people.length);
+  });
+
+  it("refuses to rotate a slice whose key is not held", async () => {
+    const { sealedTree: t0, keys: k0 } = await sealTree(plain);
+    const partial: SliceKeys = new Map([["structure", k0.get("structure")!]]);
+    await expect(resealSlices(t0, ["history"], partial)).rejects.toThrow(
+      /no current key/,
+    );
+  });
+});
+
 describe("crypto primitives", () => {
   it("rejects a tampered ciphertext instead of returning garbage", async () => {
     const key = await generateSliceKey();
@@ -223,6 +288,77 @@ describe("crypto primitives", () => {
   it("mints distinct recovery phrases", () => {
     const phrases = new Set(Array.from({ length: 50 }, newRecoveryPhrase));
     expect(phrases.size).toBe(50);
+  });
+});
+
+describe("editing: decryptToTree + reseal", () => {
+  it("round-trips the whole tree for a key holder", async () => {
+    const { sealedTree: t, keys: k } = await sealTree(plain);
+    const back = (await decryptToTree(t, k))!;
+    expect(back.name).toBe(plain.name);
+    expect(back.people.map((p) => p.id)).toEqual(plain.people.map((p) => p.id));
+    const zara = back.people.find((p) => p.id === "p15")!;
+    expect(zara.given).toBe("Zara");
+    expect(zara.birth?.date).toBe("2005-12-25");
+    const samuel = back.people.find((p) => p.id === "p1")!;
+    expect(samuel.note).toContain("Railway clerk");
+  });
+
+  it("refuses to reconstruct without every slice key", async () => {
+    const { sealedTree: t, keys: k } = await sealTree(plain);
+    const partial: SliceKeys = new Map(
+      [...k].filter(([s]) => s !== "living-detail"),
+    );
+    expect(await decryptToTree(t, partial)).toBeNull();
+  });
+
+  it("saves an edit without disturbing anyone's access", async () => {
+    const { sealedTree: t0, keys: k0 } = await sealTree(plain);
+    const owner = await generateIdentity();
+    const cousin = await generateIdentity();
+    let doc = await grantAccess(t0, owner.publicKey, ALL_SLICES, k0);
+    doc = await grantAccess(
+      doc,
+      cousin.publicKey,
+      ["structure", "history", "living-name"],
+      k0,
+    );
+
+    const ownerKeys = await keysFor(doc, owner.privateKey);
+    const edited = (await decryptToTree(doc, ownerKeys))!;
+    edited.people.push({
+      id: "p99",
+      given: "Newborn",
+      surname: "Adeyemi",
+      sex: "X",
+      living: true,
+    });
+    edited.unions.find((u) => u.id === "u5")!.children.push("p99");
+
+    const saved = await reseal(edited, ownerKeys, doc);
+
+    // Keyring untouched: the cousin still opens exactly what they could before.
+    expect(saved.keyring).toBe(doc.keyring);
+    const cousinView = (await openTree(
+      saved,
+      await keysFor(saved, cousin.privateKey),
+    ))!;
+    expect(cousinView.people.find((p) => p.id === "p99")!.label).toBe(
+      "Newborn Adeyemi",
+    );
+    const ownerView = (await openTree(
+      saved,
+      await keysFor(saved, owner.privateKey),
+    ))!;
+    expect(ownerView.people).toHaveLength(plain.people.length + 1);
+  });
+
+  it("reseal rejects a caller missing keys", async () => {
+    const { sealedTree: t, keys: k } = await sealTree(plain);
+    const partial: SliceKeys = new Map(
+      [...k].filter(([s]) => s !== "history"),
+    );
+    await expect(reseal(plain, partial, t)).rejects.toThrow(/every slice key/);
   });
 });
 

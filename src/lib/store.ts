@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { Access, Tree } from "./schema";
+import { Access, SealedTreeSchema, Tree, VaultMeta } from "./schema";
+import type { SealedTree } from "./sealed";
 
 /**
  * Storage lives behind this interface on purpose.
@@ -16,6 +17,15 @@ export interface TreeStore {
   putTree(tree: Tree): Promise<void>;
   getAccess(treeId: string): Promise<Access | null>;
   putAccess(access: Access): Promise<void>;
+
+  /* End-to-end encrypted trees. The server stores and returns these blobs
+   * without ever being able to read them. `VaultMeta` is the plaintext-safe
+   * sidecar (owner uid, invite hashes, pending public keys). */
+  listSealedIds(): Promise<string[]>;
+  getSealed(id: string): Promise<SealedTree | null>;
+  putSealed(tree: SealedTree): Promise<void>;
+  getVaultMeta(id: string): Promise<VaultMeta | null>;
+  putVaultMeta(meta: VaultMeta): Promise<void>;
 }
 
 const DATA_DIR = process.env.KINFOLD_DATA_DIR ?? path.join(process.cwd(), "data");
@@ -28,6 +38,12 @@ export class FileTreeStore implements TreeStore {
   }
   private accessPath(id: string) {
     return path.join(this.root, "access", `${safeId(id)}.json`);
+  }
+  private sealedPath(id: string) {
+    return path.join(this.root, "sealed", `${safeId(id)}.json`);
+  }
+  private vaultMetaPath(id: string) {
+    return path.join(this.root, "vault-meta", `${safeId(id)}.json`);
   }
 
   async listTreeIds(): Promise<string[]> {
@@ -69,6 +85,54 @@ export class FileTreeStore implements TreeStore {
 
   async putAccess(access: Access): Promise<void> {
     await writeJson(this.accessPath(access.treeId), Access.parse(access));
+  }
+
+  /* ---- encrypted trees ---- */
+
+  async listSealedIds(): Promise<string[]> {
+    try {
+      const files = await fs.readdir(path.join(this.root, "sealed"));
+      return files.filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5));
+    } catch {
+      return [];
+    }
+  }
+
+  async getSealed(id: string): Promise<SealedTree | null> {
+    const raw = await readJson(this.sealedPath(id));
+    if (!raw) return null;
+    const parsed = SealedTreeSchema.safeParse(raw);
+    if (!parsed.success) {
+      console.error(`Sealed tree "${id}" failed validation:`, parsed.error.issues);
+      return null;
+    }
+    // The schema is structurally identical to the SealedTree interface; the
+    // cast is the one seam between "validated shape" and "typed value".
+    return parsed.data as unknown as SealedTree;
+  }
+
+  async putSealed(tree: SealedTree): Promise<void> {
+    const validated = SealedTreeSchema.parse({
+      ...tree,
+      updatedAt: new Date().toISOString(),
+    });
+    await writeJson(this.sealedPath(tree.id), validated);
+  }
+
+  async getVaultMeta(id: string): Promise<VaultMeta | null> {
+    const raw = await readJson(this.vaultMetaPath(id));
+    if (!raw) return null;
+    const parsed = VaultMeta.safeParse(raw);
+    if (!parsed.success) {
+      // Fail closed: a broken sidecar must not read as "no owner, open season".
+      console.error(`Vault meta for "${id}" failed validation:`, parsed.error.issues);
+      return null;
+    }
+    return parsed.data;
+  }
+
+  async putVaultMeta(meta: VaultMeta): Promise<void> {
+    await writeJson(this.vaultMetaPath(meta.treeId), VaultMeta.parse(meta));
   }
 }
 

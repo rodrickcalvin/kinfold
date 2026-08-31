@@ -4,6 +4,7 @@ import {
   generateSliceKey,
   newRecordId,
   seal,
+  unseal,
   unsealAny,
   wrapSliceKey,
   unwrapSliceKey,
@@ -87,12 +88,15 @@ export type SliceKeys = Map<SliceId, CryptoKey>;
 /* Sealing — runs in the owner's browser, once, before anything uploads */
 /* ------------------------------------------------------------------ */
 
-export async function sealTree(
+/**
+ * Encrypt every person and union of a tree under the supplied slice keys.
+ * Shared by first-time sealing and by re-sealing after an edit, so the two can
+ * never drift in what they put in which slice.
+ */
+async function buildRecords(
   tree: Tree,
-): Promise<{ sealedTree: SealedTree; keys: SliceKeys }> {
-  const keys: SliceKeys = new Map();
-  for (const s of ALL_SLICES) keys.set(s, await generateSliceKey());
-
+  keys: SliceKeys,
+): Promise<Array<{ id: string; sealed: Sealed }>> {
   const records: Array<{ id: string; sealed: Sealed }> = [];
   const add = async (slice: SliceId, payload: Payload) => {
     records.push({ id: newRecordId(), sealed: await seal(keys.get(slice)!, payload) });
@@ -148,16 +152,47 @@ export async function sealTree(
    * in pairs. Order is metadata too.
    */
   shuffle(records);
+  return records;
+}
+
+export async function sealTree(
+  tree: Tree,
+): Promise<{ sealedTree: SealedTree; keys: SliceKeys }> {
+  const keys: SliceKeys = new Map();
+  for (const s of ALL_SLICES) keys.set(s, await generateSliceKey());
 
   return {
     sealedTree: {
       id: tree.id,
       version: 1,
-      records,
+      records: await buildRecords(tree, keys),
       keyring: [],
       updatedAt: new Date().toISOString(),
     },
     keys,
+  };
+}
+
+/**
+ * Re-seal an edited tree without minting new slice keys or disturbing the
+ * keyring. Every member keeps the access they had; only the ciphertext is
+ * rewritten. Use this to save an edit; use `resealSlices` when the point is to
+ * lock someone out.
+ */
+export async function reseal(
+  tree: Tree,
+  keys: SliceKeys,
+  previous: SealedTree,
+): Promise<SealedTree> {
+  if (ALL_SLICES.some((s) => !keys.has(s))) {
+    throw new Error("reseal needs every slice key — only the owner can edit");
+  }
+  return {
+    id: tree.id,
+    version: 1,
+    records: await buildRecords(tree, keys),
+    keyring: previous.keyring,
+    updatedAt: new Date().toISOString(),
   };
 }
 
@@ -204,6 +239,86 @@ export function revokeAccess(
     ...sealedTree,
     keyring: sealedTree.keyring.filter((k) => k.memberId !== memberId),
     updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Rotate the keys for one or more slices: mint fresh slice keys, re-encrypt
+ * every record that belonged to those slices, and re-wrap the new keys to
+ * everyone still in the keyring. This is what makes revocation real — call
+ * `revokeAccess` to drop the departing member, then `resealSlices` so the key
+ * they kept a copy of no longer opens anything new.
+ *
+ * Records deliberately do not carry their slice id, so a record's slice is
+ * discovered the only way it can be: by trying the old key against it.
+ *
+ * Returns the rewritten document and the complete new SliceKeys map, so the
+ * owner's browser keeps working without re-deriving anything.
+ */
+export async function resealSlices(
+  sealedTree: SealedTree,
+  slices: SliceId[],
+  oldKeys: SliceKeys,
+): Promise<{ sealedTree: SealedTree; keys: SliceKeys }> {
+  const rotating = new Set(slices);
+
+  // A replacement key for each rotating slice; every other key is carried over.
+  const newKeys: SliceKeys = new Map(oldKeys);
+  for (const slice of rotating) {
+    if (!oldKeys.has(slice)) {
+      throw new Error(`resealSlices: no current key held for slice "${slice}"`);
+    }
+    newKeys.set(slice, await generateSliceKey());
+  }
+
+  // Re-encrypt every record whose old key is being retired. A record that none
+  // of the rotating keys opens is passed through untouched.
+  const records: Array<{ id: string; sealed: Sealed }> = [];
+  for (const rec of sealedTree.records) {
+    let rotated = false;
+    for (const slice of rotating) {
+      const payload = await unseal<Payload>(oldKeys.get(slice)!, rec.sealed);
+      if (payload === null) continue;
+      records.push({
+        id: newRecordId(), // fresh id, so the operator cannot diff versions
+        sealed: await seal(newKeys.get(slice)!, payload),
+      });
+      rotated = true;
+      break;
+    }
+    if (!rotated) records.push({ id: rec.id, sealed: rec.sealed });
+  }
+  shuffle(records);
+
+  // Re-wrap: a grant for a rotating slice now carries the new key. Grants for
+  // untouched slices are left exactly as they were.
+  const keyring: KeyringEntry[] = [];
+  for (const entry of sealedTree.keyring) {
+    const grants: KeyringEntry["grants"] = [];
+    for (const grant of entry.grants) {
+      grants.push(
+        rotating.has(grant.slice)
+          ? {
+              slice: grant.slice,
+              wrapped: await wrapSliceKey(
+                newKeys.get(grant.slice)!,
+                entry.publicKey,
+              ),
+            }
+          : grant,
+      );
+    }
+    keyring.push({ ...entry, grants });
+  }
+
+  return {
+    sealedTree: {
+      ...sealedTree,
+      records,
+      keyring,
+      updatedAt: new Date().toISOString(),
+    },
+    keys: newKeys,
   };
 }
 
@@ -345,6 +460,85 @@ export async function openTree(
       redactedCount,
       scoped: !keys.has("living-detail"),
     },
+  };
+}
+
+/**
+ * Reconstruct the full plaintext `Tree` from ciphertext. Only useful to a
+ * holder of every slice key — i.e. the owner, opening the editor. Anyone else
+ * gets null, because a partial tree is not a thing you can safely re-seal.
+ *
+ * Note: marriage/partnership dates are not carried by the sealed format (see
+ * `buildRecords`), so a round-trip through here and back drops `union.start`
+ * and `union.end`.
+ */
+export async function decryptToTree(
+  sealedTree: SealedTree,
+  keys: SliceKeys,
+): Promise<Tree | null> {
+  if (ALL_SLICES.some((s) => !keys.has(s))) return null;
+  const held = [...keys.values()];
+
+  let meta: { name: string; description?: string } | null = null;
+  let roster: string[] = [];
+  const unions: Union[] = [];
+  const people = new Map<string, Person>();
+
+  for (const rec of sealedTree.records) {
+    const payload = await unsealAny<Payload>(held, rec.sealed);
+    if (!payload) continue;
+    switch (payload.t) {
+      case "meta":
+        meta = { name: payload.name, description: payload.description };
+        break;
+      case "roster":
+        roster = payload.personIds;
+        break;
+      case "union":
+        unions.push(payload.union);
+        break;
+      case "person-full":
+        people.set(payload.person.id, payload.person);
+        break;
+      case "person-name":
+        people.set(payload.id, {
+          ...(people.get(payload.id) ?? { id: payload.id }),
+          id: payload.id,
+          given: payload.given,
+          surname: payload.surname,
+          sex: payload.sex,
+          living: true,
+        } as Person);
+        break;
+      case "person-detail": {
+        const d = payload.detail;
+        people.set(payload.id, {
+          ...(people.get(payload.id) ?? { id: payload.id, sex: "X" }),
+          id: payload.id,
+          given: d.given,
+          surname: d.surname,
+          birthSurname: d.birthSurname,
+          birth: d.birth,
+          death: d.death,
+          note: d.note,
+          photo: d.photo,
+          living: true,
+        } as Person);
+        break;
+      }
+    }
+  }
+
+  if (!meta) return null;
+
+  const order = roster.length ? roster : [...people.keys()];
+  return {
+    id: sealedTree.id,
+    name: meta.name,
+    description: meta.description,
+    people: order.map((id) => people.get(id)).filter((p): p is Person => !!p),
+    unions,
+    updatedAt: sealedTree.updatedAt,
   };
 }
 

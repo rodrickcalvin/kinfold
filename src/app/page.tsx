@@ -4,6 +4,7 @@ import { store } from "@/lib/store";
 import { roleFor } from "@/lib/access";
 import { atLeast } from "@/lib/schema";
 import { inferLiving } from "@/lib/schema";
+import { VaultHomeSection } from "@/components/vault/VaultHomeSection";
 
 export const dynamic = "force-dynamic"; // the answer depends on who is asking
 
@@ -53,9 +54,11 @@ export default async function Home() {
 
       {uid ? (
         <>
+          <VaultHomeSection />
+
           <section className="mb-8">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">
-              Trees you can see
+              Self-hosted trees
             </h2>
 
             {trees.length === 0 ? (

@@ -10,9 +10,8 @@
  * address. For Google that is the numeric `sub` claim; for GitHub it is the
  * numeric account id.
  */
-import { createHmac } from "node:crypto";
+import { DEV_PEPPER, deriveUidWith } from "../src/lib/uid-core.mjs";
 
-const DEV_PEPPER = "dev-only-insecure-pepper-do-not-ship-me!!";
 const pepper = process.env.KINFOLD_PEPPER ?? DEV_PEPPER;
 
 const [issuer, subject] = process.argv.slice(2);
@@ -25,9 +24,4 @@ if (pepper === DEV_PEPPER) {
   console.error("! using the development pepper — these uids are not for production\n");
 }
 
-const uid = createHmac("sha256", pepper)
-  .update(`v1|${issuer}|${subject}`)
-  .digest("base64url")
-  .slice(0, 32);
-
-console.log(uid);
+console.log(deriveUidWith(pepper, issuer, subject));

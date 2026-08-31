@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # The privacy claims live in the test suite. Run it first and loudly.
+      - run: npm test
+
+      - run: npm run lint
+
+      - run: npm run build
+        env:
+          # Build-time only. Real secrets are set in the deploy environment.
+          AUTH_SECRET: ci-build-only-not-a-real-secret-000000000000
+          KINFOLD_PEPPER: ci-build-only-not-a-real-pepper-0000000000000

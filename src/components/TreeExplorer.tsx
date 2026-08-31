@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { CARD_H, CARD_W, type Layout, type LaidOutPerson } from "@/lib/layout";
 import type { VisiblePerson } from "@/lib/visibility";
 
@@ -129,7 +130,7 @@ export default function TreeExplorer({ layout, treeName, viewer }: Props) {
       {/* Header */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3">
         <div className="pointer-events-auto mx-auto flex max-w-2xl items-center gap-3 rounded-2xl border border-line bg-surface/85 px-4 py-2.5 backdrop-blur card-shadow">
-          <a
+          <Link
             href="/"
             className="-ml-1 shrink-0 rounded-lg px-1.5 py-1 text-muted transition-colors hover:text-ink"
             aria-label="All trees"
@@ -143,7 +144,7 @@ export default function TreeExplorer({ layout, treeName, viewer }: Props) {
                 strokeLinejoin="round"
               />
             </svg>
-          </a>
+          </Link>
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-[15px] font-semibold leading-tight">
               {treeName}

@@ -7,5 +7,12 @@
   "orientation": "any",
   "background_color": "#f6f3ee",
   "theme_color": "#f6f3ee",
-  "icons": []
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
 }

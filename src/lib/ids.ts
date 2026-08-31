@@ -1,4 +1,5 @@
-import { createHmac, timingSafeEqual, randomBytes } from "node:crypto";
+import { timingSafeEqual, randomBytes } from "node:crypto";
+import { DEV_PEPPER, deriveUidWith, hmacWith } from "./uid-core.mjs";
 
 /**
  * Everything in here exists to answer one question:
@@ -8,6 +9,9 @@ import { createHmac, timingSafeEqual, randomBytes } from "node:crypto";
  * Same person, same hash, every time — so permissions keep working.
  * But the hash cannot be turned back into an email, and it is worthless
  * in any other deployment because the pepper differs.
+ *
+ * The raw HMAC lives in `uid-core.mjs` so the CLI in `scripts/uid.mjs` can
+ * import the identical implementation instead of re-typing it.
  */
 
 function pepper(): string {
@@ -20,13 +24,9 @@ function pepper(): string {
       );
     }
     // Dev only, and fixed so uids stay stable across restarts while you build.
-    return "dev-only-insecure-pepper-do-not-ship-me!!";
+    return DEV_PEPPER;
   }
   return p;
-}
-
-function hmac(input: string): string {
-  return createHmac("sha256", pepper()).update(input).digest("base64url");
 }
 
 /**
@@ -40,8 +40,7 @@ function hmac(input: string): string {
  * it is the emergency "log everyone out of everything" lever.
  */
 export function deriveUid(issuer: string, subject: string): string {
-  if (!issuer || !subject) throw new Error("deriveUid needs issuer and subject");
-  return hmac(`v1|${issuer}|${subject}`).slice(0, 32);
+  return deriveUidWith(pepper(), issuer, subject);
 }
 
 /** Invite codes: we hand out the code, we store only the hash. */
@@ -50,7 +49,7 @@ export function newInviteCode(): string {
 }
 
 export function hashInvite(code: string): string {
-  return hmac(`invite|${code}`);
+  return hmacWith(pepper(), `invite|${code}`);
 }
 
 /** Constant-time compare so we do not leak hash contents through timing. */

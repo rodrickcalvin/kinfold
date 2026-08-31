@@ -79,7 +79,13 @@ export function toB64(buf: ArrayBuffer | Uint8Array): string {
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export function fromB64(s: string): Uint8Array {
+/**
+ * The `<ArrayBuffer>` on the return types is load-bearing: current TypeScript
+ * lib types make `Uint8Array` generic over its backing buffer, and WebCrypto's
+ * `BufferSource` only accepts the `ArrayBuffer`-backed form. Being explicit here
+ * keeps every `subtle.*` call site clean of casts.
+ */
+export function fromB64(s: string): Uint8Array<ArrayBuffer> {
   const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
   const bin = atob(b64.padEnd(Math.ceil(b64.length / 4) * 4, "="));
   return Uint8Array.from(bin, (c) => c.charCodeAt(0));
@@ -88,7 +94,7 @@ export function fromB64(s: string): Uint8Array {
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
-function randomBytes(n: number): Uint8Array {
+function randomBytes(n: number): Uint8Array<ArrayBuffer> {
   return globalThis.crypto.getRandomValues(new Uint8Array(n));
 }
 

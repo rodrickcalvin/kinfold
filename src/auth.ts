@@ -3,8 +3,20 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { deriveUid } from "@/lib/ids";
+import { stripIdentifyingClaims } from "@/lib/token";
 
 const isProd = process.env.NODE_ENV === "production";
+
+/**
+ * The cookie-signing secret. In production it MUST come from the environment —
+ * `KINFOLD_PEPPER`/`AUTH_SECRET` are checked at deploy time. In development we
+ * fall back to a fixed throwaway so `npm run dev` needs no `.env.local` at all,
+ * which is the promise the README makes. Same spirit as the dev pepper in
+ * `src/lib/ids.ts`.
+ */
+const authSecret =
+  process.env.AUTH_SECRET ??
+  (isProd ? undefined : "dev-only-insecure-auth-secret-do-not-ship-me!!");
 
 /**
  * A provider is only registered if its keys are present. That means you can
@@ -46,6 +58,7 @@ if (!isProd) {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   trustHost: true,
+  secret: authSecret,
 
   /**
    * THE LOAD-BEARING LINE.
@@ -74,10 +87,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       // Belt and braces: Auth.js puts these on the token by default, and we
       // want them gone from the cookie whether or not a provider sent them.
-      delete token.name;
-      delete token.email;
-      delete token.picture;
-      delete token.sub;
+      stripIdentifyingClaims(token);
 
       return token;
     },

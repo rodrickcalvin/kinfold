@@ -50,7 +50,9 @@ yarn-error.log*
 .env*
 !.env.example
 
-# Runtime tree data. store.ts writes real family records here; only the
+# Runtime tree data. store.ts writes real family records here: plaintext trees
+# and access lists under trees/ and access/, end-to-end encrypted blobs under
+# sealed/, and their plaintext-safe sidecars under vault-meta/. Only the
 # invented Adeyemi fixture is committed.
 /data/**
 !/data/trees/
@@ -68,3 +70,5 @@ next-env.d.ts
 # AI
 *CLAUDE.*
 .claude/
+# Regenerated on every `next dev`; see node_modules/next/.../generate-agent-files.js
+AGENTS.md
