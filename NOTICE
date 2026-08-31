@@ -1,0 +1,36 @@
+Kinfold
+Copyright (C) 2026 The Kinfold contributors
+Started by Rodrick Calvin.
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version. See the LICENSE file for the full text.
+
+
+Why the AGPL, specifically
+--------------------------
+
+Kinfold's entire value is that you can verify the operator cannot read your
+family's data. A permissive licence would let someone run a modified, hosted
+copy that quietly logs plaintext, weakens the crypto, or exfiltrates keys,
+with no obligation to tell anyone.
+
+Section 13 of the AGPL closes that gap: anyone who runs a modified version as
+a network service must offer its users the complete corresponding source of
+that modified version. Combined with the architecture — records are encrypted
+in the browser, the server holds only ciphertext and wrapped keys — this is
+what makes "we cannot read your tree" a checkable claim rather than a promise.
+
+
+A request, not a licence term
+-----------------------------
+
+The people described in a family tree did not sign up and cannot object. If
+you run an instance, please keep that data inside the application's own
+purpose: do not sell it, feed it to analytics or advertising, train models on
+it, or hand it to a third party, and honour a request to be removed.
+
+This paragraph is a statement of intent. It adds no condition to the AGPL and
+is not a "further restriction" under section 7 — the licence terms are exactly
+those in the LICENSE file, nothing more.

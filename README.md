@@ -97,7 +97,13 @@ random 32+ character strings (`openssl rand -base64 32`), and add
 
 ## Licence
 
-MIT. Worth considering AGPL-3.0 before this goes public — it would require
-anyone running a modified hosted version to publish their changes, which for a
-project whose entire value is "you can verify we cannot read your data" is a
-meaningful protection rather than a formality.
+**AGPL-3.0-or-later** ([LICENSE](./LICENSE)). Chosen deliberately: section 13
+requires anyone running a *modified* hosted copy to offer its users the source
+of that modified version. For a project whose whole value is "you can verify
+we cannot read your data", that is the protection that makes the claim
+checkable rather than a promise — a permissive licence would let a hosted fork
+add a backdoor with no obligation to say so.
+
+Copyright © 2026 the Kinfold contributors; started by Rodrick Calvin. See
+[NOTICE](./NOTICE) for the reasoning and for a (non-binding) request about how
+the family data an instance holds should and should not be used.
